@@ -1,0 +1,102 @@
+{
+  "agent_name": "Resume Analyzer Agent",
+  "agent_id": "69996158deebc613f15864ca",
+  "description": "Analyzes the user's resume against the job description across five dimensions: skills matching, experience relevance, keyword/ATS optimization, education & certifications, and achievements & impact. Produces a numerical score (0\u2013100) with per-dimension breakdown, identifies gaps, and highlights strengths.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "overall_score": "number",
+    "summary": "string",
+    "dimensions": {
+      "skills": {
+        "score": "number",
+        "status": "string",
+        "findings": [
+          "string"
+        ]
+      },
+      "experience": {
+        "score": "number",
+        "status": "string",
+        "findings": [
+          "string"
+        ]
+      },
+      "keywords": {
+        "score": "number",
+        "status": "string",
+        "findings": [
+          "string"
+        ]
+      },
+      "education": {
+        "score": "number",
+        "status": "string",
+        "findings": [
+          "string"
+        ]
+      },
+      "achievements": {
+        "score": "number",
+        "status": "string",
+        "findings": [
+          "string"
+        ]
+      }
+    },
+    "gaps": [
+      "string"
+    ],
+    "strengths": [
+      "string"
+    ]
+  },
+  "example_response": {
+    "overall_score": 0,
+    "summary": "sample string",
+    "dimensions": {
+      "skills": {
+        "score": 0,
+        "status": "sample string",
+        "findings": [
+          "sample string"
+        ]
+      },
+      "experience": {
+        "score": 0,
+        "status": "sample string",
+        "findings": [
+          "sample string"
+        ]
+      },
+      "keywords": {
+        "score": 0,
+        "status": "sample string",
+        "findings": [
+          "sample string"
+        ]
+      },
+      "education": {
+        "score": 0,
+        "status": "sample string",
+        "findings": [
+          "sample string"
+        ]
+      },
+      "achievements": {
+        "score": 0,
+        "status": "sample string",
+        "findings": [
+          "sample string"
+        ]
+      }
+    },
+    "gaps": [
+      "sample string"
+    ],
+    "strengths": [
+      "sample string"
+    ]
+  }
+}

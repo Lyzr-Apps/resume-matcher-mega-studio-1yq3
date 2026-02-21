@@ -1,0 +1,36 @@
+{
+  "agent_name": "Resume Optimizer Agent",
+  "agent_id": "69996158ceed43b6522c456c",
+  "description": "Receives the original resume, job description, and the analysis results. Comprehensively rewrites and restructures the resume content to maximize JD alignment while remaining truthful. Optimizes for ATS keywords, condenses to single-page format, and outputs polished resume text ready for PDF rendering.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "optimized_resume_text": "string",
+    "changes_made": [
+      "string"
+    ],
+    "keyword_additions": [
+      "string"
+    ],
+    "formatting_notes": "string"
+  },
+  "example_response": {
+    "optimized_resume_text": "sample string",
+    "changes_made": [
+      "sample string"
+    ],
+    "keyword_additions": [
+      "sample string"
+    ],
+    "formatting_notes": "sample string"
+  },
+  "has_module_outputs": true,
+  "module_outputs_example": {
+    "artifact_files": [
+      {
+        "file_url": "https://example.com/file.pdf"
+      }
+    ]
+  }
+}

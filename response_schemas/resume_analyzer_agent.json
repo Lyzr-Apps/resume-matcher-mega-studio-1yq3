@@ -1,0 +1,75 @@
+{
+  "agent_name": "Resume Analyzer Agent",
+  "agent_id": "69996158deebc613f15864ca",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "overall_score": { "type": "number" },
+      "summary": { "type": "string" },
+      "dimensions": {
+        "type": "object",
+        "properties": {
+          "skills": {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number" },
+              "status": { "type": "string" },
+              "findings": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["score", "status", "findings"],
+            "additionalProperties": false
+          },
+          "experience": {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number" },
+              "status": { "type": "string" },
+              "findings": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["score", "status", "findings"],
+            "additionalProperties": false
+          },
+          "keywords": {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number" },
+              "status": { "type": "string" },
+              "findings": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["score", "status", "findings"],
+            "additionalProperties": false
+          },
+          "education": {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number" },
+              "status": { "type": "string" },
+              "findings": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["score", "status", "findings"],
+            "additionalProperties": false
+          },
+          "achievements": {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number" },
+              "status": { "type": "string" },
+              "findings": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["score", "status", "findings"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["skills", "experience", "keywords", "education", "achievements"],
+        "additionalProperties": false
+      },
+      "gaps": { "type": "array", "items": { "type": "string" } },
+      "strengths": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["overall_score", "summary", "dimensions", "gaps", "strengths"],
+    "additionalProperties": false
+  }
+}

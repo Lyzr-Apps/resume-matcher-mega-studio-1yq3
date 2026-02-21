@@ -1,0 +1,32 @@
+{
+  "agents": [
+    {
+      "agent_id": "69996158deebc613f15864ca",
+      "name": "Resume Analyzer Agent",
+      "node_id": "analyzer_agent",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "temperature": 0.3,
+      "top_p": 1,
+      "file_output": false,
+      "image_output": false,
+      "voice_output": false
+    },
+    {
+      "agent_id": "69996158ceed43b6522c456c",
+      "name": "Resume Optimizer Agent",
+      "node_id": "optimizer_agent",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "temperature": 0.4,
+      "top_p": 0.95,
+      "file_output": true,
+      "image_output": false,
+      "voice_output": false
+    }
+  ],
+  "agent_ids": [
+    "69996158deebc613f15864ca",
+    "69996158ceed43b6522c456c"
+  ]
+}

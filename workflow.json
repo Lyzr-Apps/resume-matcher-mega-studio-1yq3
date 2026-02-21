@@ -1,0 +1,42 @@
+{
+  "nodes": [
+    {
+      "id": "input_node",
+      "type": "Input",
+      "label": "Resume & JD Input",
+      "nodeCategory": "input"
+    },
+    {
+      "id": "analyzer_agent",
+      "type": "Agent",
+      "label": "Resume Analyzer Agent",
+      "nodeCategory": "agent"
+    },
+    {
+      "id": "optimizer_agent",
+      "type": "Agent",
+      "label": "Resume Optimizer Agent",
+      "nodeCategory": "agent"
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Optimized Resume Output",
+      "nodeCategory": "end"
+    }
+  ],
+  "edges": [
+    {
+      "source": "input_node",
+      "target": "analyzer_agent"
+    },
+    {
+      "source": "analyzer_agent",
+      "target": "optimizer_agent"
+    },
+    {
+      "source": "optimizer_agent",
+      "target": "output_node"
+    }
+  ]
+}
