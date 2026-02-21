@@ -29,6 +29,7 @@ import {
   FiStar,
   FiKey,
   FiBriefcase,
+  FiLoader,
 } from 'react-icons/fi'
 
 // ---- Types ----
@@ -265,6 +266,238 @@ function renderMarkdown(text: string) {
       })}
     </div>
   )
+}
+
+// ---- ATS-Friendly PDF Generator ----
+// Uses a hidden iframe with print-optimized HTML to produce a real PDF
+// with selectable text — critical for ATS parsing
+
+function convertMarkdownToResumeHTML(text: string): string {
+  if (!text) return ''
+  const lines = text.split('\n')
+  const htmlParts: string[] = []
+  let inBulletList = false
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+
+    // Close open bullet list if this line isn't a bullet
+    if (inBulletList && !trimmed.startsWith('- ') && !trimmed.startsWith('* ')) {
+      htmlParts.push('</ul>')
+      inBulletList = false
+    }
+
+    if (!trimmed) {
+      htmlParts.push('<div style="height:4px"></div>')
+      continue
+    }
+
+    // Apply inline bold formatting
+    const withBold = trimmed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+
+    // # Name
+    if (trimmed.startsWith('# ')) {
+      const content = trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      htmlParts.push(`<h1 class="resume-name">${content}</h1>`)
+      continue
+    }
+
+    // ## Section Heading
+    if (trimmed.startsWith('## ')) {
+      const content = trimmed.slice(3).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      htmlParts.push(`<h2 class="resume-section-heading">${content}</h2><hr class="resume-hr">`)
+      continue
+    }
+
+    // ### Sub-heading
+    if (trimmed.startsWith('### ')) {
+      const content = trimmed.slice(4).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      htmlParts.push(`<h3 class="resume-subheading">${content}</h3>`)
+      continue
+    }
+
+    // Bullet points
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      if (!inBulletList) {
+        htmlParts.push('<ul class="resume-bullets">')
+        inBulletList = true
+      }
+      const content = trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      htmlParts.push(`<li>${content}</li>`)
+      continue
+    }
+
+    // Regular text
+    htmlParts.push(`<p class="resume-text">${withBold}</p>`)
+  }
+
+  if (inBulletList) htmlParts.push('</ul>')
+  return htmlParts.join('\n')
+}
+
+function generateATSResumePDF(resumeText: string): void {
+  const resumeHTML = convertMarkdownToResumeHTML(resumeText)
+
+  const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Optimized Resume</title>
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.45;
+    color: #1a1a1a;
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .resume-page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 20mm 16mm 20mm;
+    margin: 0 auto;
+    background: #ffffff;
+  }
+  .resume-name {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+    margin-bottom: 2pt;
+    line-height: 1.1;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .resume-section-heading {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 12pt;
+    margin-bottom: 0;
+    padding-bottom: 2pt;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .resume-hr {
+    border: none;
+    border-top: 1px solid #b0b0b0;
+    margin: 2pt 0 6pt 0;
+  }
+  .resume-subheading {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-top: 6pt;
+    margin-bottom: 2pt;
+    line-height: 1.35;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .resume-text {
+    font-size: 10pt;
+    line-height: 1.45;
+    color: #333333;
+    margin-bottom: 2pt;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .resume-text strong {
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .resume-bullets {
+    list-style: disc;
+    padding-left: 16pt;
+    margin-top: 2pt;
+    margin-bottom: 4pt;
+  }
+  .resume-bullets li {
+    font-size: 9.5pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin-bottom: 1.5pt;
+    padding-left: 2pt;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .resume-bullets li strong {
+    font-weight: 700;
+  }
+
+  /* Print-specific overrides */
+  @media print {
+    body { background: #ffffff; }
+    .resume-page {
+      width: 100%;
+      min-height: auto;
+      padding: 14mm 18mm 14mm 18mm;
+      page-break-inside: avoid;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="resume-page">
+${resumeHTML}
+</div>
+</body>
+</html>`
+
+  // Open a new window with the formatted resume and trigger print (Save as PDF)
+  const printWindow = window.open('', '_blank', 'width=800,height=1100')
+  if (!printWindow) {
+    // Popup blocked — fallback to iframe approach
+    const iframe = document.createElement('iframe')
+    iframe.style.position = 'fixed'
+    iframe.style.top = '-10000px'
+    iframe.style.left = '-10000px'
+    iframe.style.width = '210mm'
+    iframe.style.height = '297mm'
+    iframe.style.border = 'none'
+    document.body.appendChild(iframe)
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+    if (iframeDoc) {
+      iframeDoc.open()
+      iframeDoc.write(fullHTML)
+      iframeDoc.close()
+
+      setTimeout(() => {
+        iframe.contentWindow?.print()
+        setTimeout(() => document.body.removeChild(iframe), 2000)
+      }, 500)
+    }
+    return
+  }
+
+  printWindow.document.write(fullHTML)
+  printWindow.document.close()
+
+  // Wait for content to render, then trigger print dialog (user selects "Save as PDF")
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.print()
+      // Close after a delay to allow print dialog
+      setTimeout(() => {
+        printWindow.close()
+      }, 1000)
+    }, 300)
+  }
+
+  // Fallback if onload doesn't fire
+  setTimeout(() => {
+    try {
+      printWindow.print()
+    } catch {}
+  }, 1000)
 }
 
 // ---- Error Boundary ----
@@ -509,7 +742,7 @@ function AccordionSection({ title, items, icon }: { title: string; items: string
 function ResumePreview({ text }: { text: string }) {
   if (!text) return null
   return (
-    <div className="bg-white border border-[#d9d9d9] max-w-[700px] mx-auto">
+    <div className="bg-white border border-[#d9d9d9] max-w-[700px] mx-auto" style={{ aspectRatio: '210/297' }}>
       <div className="p-8 md:p-12 min-h-[600px]">
         {renderMarkdown(text)}
       </div>
@@ -569,6 +802,7 @@ export default function Page() {
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
   const [showSampleData, setShowSampleData] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -748,21 +982,33 @@ export default function Page() {
   }, [])
 
   const handleDownload = useCallback(() => {
+    // First check for agent-generated artifact PDF
     const files = Array.isArray(moduleOutputs?.artifact_files) ? moduleOutputs.artifact_files : []
-    if (files.length > 0 && files[0]?.file_url) {
-      window.open(files[0].file_url, '_blank')
+    const pdfArtifact = files.find(f => f?.file_url && f?.format_type?.toLowerCase()?.includes('pdf'))
+    if (pdfArtifact?.file_url) {
+      window.open(pdfArtifact.file_url, '_blank')
       return
     }
-    // Fallback: download text as file
+
+    // Generate ATS-friendly PDF from optimized resume text
     const text = optimizationResult?.optimized_resume_text ?? ''
     if (!text) return
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'optimized_resume.txt'
-    a.click()
-    URL.revokeObjectURL(url)
+
+    setIsGeneratingPdf(true)
+    try {
+      generateATSResumePDF(text)
+    } catch (err) {
+      // If PDF generation fails, fall back to text download
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'optimized_resume.txt'
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setTimeout(() => setIsGeneratingPdf(false), 1500)
+    }
   }, [moduleOutputs, optimizationResult])
 
   // Sample data effect
@@ -1135,10 +1381,14 @@ export default function Page() {
                       <h3 className="font-serif font-bold text-xs tracking-tight uppercase text-[#666666]">Preview</h3>
                       <button
                         onClick={handleDownload}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#141414] text-[#fafafa] text-xs font-medium hover:bg-[#333333] transition-colors"
+                        disabled={isGeneratingPdf}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                          isGeneratingPdf ? 'bg-[#666666] text-[#fafafa] cursor-wait' : 'bg-[#141414] text-[#fafafa] hover:bg-[#333333]'
+                        )}
                       >
-                        <FiDownload className="w-3 h-3" />
-                        {Array.isArray(moduleOutputs?.artifact_files) && (moduleOutputs?.artifact_files?.length ?? 0) > 0 ? 'Download PDF' : 'Download TXT'}
+                        {isGeneratingPdf ? <FiLoader className="w-3 h-3 animate-spin" /> : <FiDownload className="w-3 h-3" />}
+                        {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
                       </button>
                     </div>
                     <div className="overflow-y-auto max-h-[800px]">
@@ -1149,21 +1399,30 @@ export default function Page() {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button
-                  onClick={handleDownload}
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-[#141414] text-[#fafafa] text-sm font-medium tracking-tight hover:bg-[#333333] transition-colors"
-                >
-                  <FiDownload className="w-4 h-4" />
-                  {Array.isArray(moduleOutputs?.artifact_files) && (moduleOutputs?.artifact_files?.length ?? 0) > 0 ? 'Download Optimized PDF' : 'Download as Text'}
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="inline-flex items-center gap-1.5 text-sm text-[#666666] hover:text-[#141414] transition-colors"
-                >
-                  <FiRefreshCw className="w-4 h-4" />
-                  Try Another Job
-                </button>
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <button
+                    onClick={handleDownload}
+                    disabled={isGeneratingPdf}
+                    className={cn(
+                      'inline-flex items-center gap-2 px-8 py-3 text-sm font-medium tracking-tight transition-colors',
+                      isGeneratingPdf ? 'bg-[#666666] text-[#fafafa] cursor-wait' : 'bg-[#141414] text-[#fafafa] hover:bg-[#333333]'
+                    )}
+                  >
+                    {isGeneratingPdf ? <FiLoader className="w-4 h-4 animate-spin" /> : <FiDownload className="w-4 h-4" />}
+                    {isGeneratingPdf ? 'Preparing PDF...' : 'Download Optimized PDF'}
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="inline-flex items-center gap-1.5 text-sm text-[#666666] hover:text-[#141414] transition-colors"
+                  >
+                    <FiRefreshCw className="w-4 h-4" />
+                    Try Another Job
+                  </button>
+                </div>
+                <p className="text-xs text-[#666666] text-center max-w-md">
+                  ATS-optimized PDF with selectable text, clean formatting, and standard fonts for maximum compatibility with applicant tracking systems. Select "Save as PDF" in the print dialog.
+                </p>
               </div>
             </div>
           )}
